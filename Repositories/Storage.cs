@@ -15,8 +15,8 @@ public class Storage : DbContext
 
         modelBuilder.Entity<Domain.Product>(entity =>
         {
-           entity.HasKey(property => property.Identity);
-           entity.Property(property => property.Identity).UseIdentityByDefaultColumn();
+            entity.HasKey(property => property.Identity);
+            entity.Property(property => property.Identity).UseIdentityByDefaultColumn();
         });
     }
 

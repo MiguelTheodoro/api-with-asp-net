@@ -4,7 +4,7 @@ using Stable.Repositories;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddDbContext<Storage>(config => config.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<Storage>(config => config.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")).LogTo(Console.Write, LogLevel.Information));
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
