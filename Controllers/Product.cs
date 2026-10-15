@@ -1,87 +1,74 @@
 using Microsoft.AspNetCore.Mvc;
 
 namespace Stable.Controllers;
-using Stable.Repositories;
-using Stable;
-using Stable.Domain;
-using Microsoft.EntityFrameworkCore;
+
+using MediatR;
 
 [ApiController]
 [Route("[controller]")]
-public class ProductController(Storage storage): ControllerBase
+public class ProductController(IMediator mediator): ControllerBase
 {
     [HttpPost]
-    public async Task<IActionResult> CraeteProduct(Command.Product command, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> CraeteProduct(Command.Product.Create command)
     {
-        Domain.Product product = Domain.Product.From(command);
 
-        storage.Products.Add(product);
-
-        await storage.SaveChangesAsync(cancellationToken);
+        Result.Product.Create product = await mediator.Send(command);
 
         return CreatedAtAction(nameof(GetProductByIdentity), new { identity = product.Identity }, product);
 
     }
 
     [HttpPut("{identity}")]
-    public async Task<IActionResult> UpdateProduct(int identity, Command.Product command,  CancellationToken cancellationToken = default)
+    public async Task<IActionResult> UpdateProduct(int identity, Command.Product.Update command)
     {
-        Domain.Product? product = await storage.Products.FirstOrDefaultAsync(product => product.Identity == identity);
-        //Domain.Product? product = await storage.Products.SingleOrDefaultAsync(product => product.Identity == identity);
+
+        Command.Product.Update request = command with  { Identity = identity };
+
+        Result.Product.Update? result = await mediator.Send(request);
         
-
-        if(product is null) return NotFound();
-
-        /*product.Name = command.Name;
-        product.Price = command.Price;
-
-        storage.Products.Update(product);*/
-
-        storage.Entry(product).CurrentValues.SetValues(command);
-
-        await storage.SaveChangesAsync(cancellationToken);
+        if(result is null) return NotFound();
 
         return NoContent();
-    
         
     }
 
     [HttpDelete("{identity}")]
-    public async Task<IActionResult> DeleteProduct(int identity, Command.Product command,  CancellationToken cancellationToken = default)
+    public async Task<IActionResult> DeleteProduct(int identity)
     {
-        Domain.Product? product = await storage.Products.FirstOrDefaultAsync(product => product.Identity == identity);
 
-        if(product is null) return NotFound();
+        Command.Product.Delete request = new Command.Product.Delete(identity);
 
-        storage.Products.Remove(product);
-
-        await storage.SaveChangesAsync(cancellationToken);
+        Result.Product.Delete? result = await mediator.Send(request);
+        
+        if(result is null) return NotFound();
 
         return Ok();
-    
         
     }
 
     [HttpGet("{identity}")]
-    public async Task<IActionResult> GetProductByIdentity(int identity, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetProductByIdentity(int identity)
     {
 
-        Domain.Product? product = await storage.Products.FirstOrDefaultAsync(product => product.Identity == identity, cancellationToken);
+        Query.Product.ByIdentity request = new Query.Product.ByIdentity(identity);
+
+        Result.Product.ByIdentity? result = await mediator.Send(request);
         
-        if(product is null) return NotFound();
+        if(result is null) return NotFound();
 
-        Result.Product response = Result.Product.From(product);
-
-        return Ok(response);
+        return Ok(result);
 
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllProducts(CancellationToken cancellationToken = default)
-    {
-        List<Result.Product> products = await storage.Products.Select(product => Result.Product.From(product)).ToListAsync(cancellationToken);
+    public async Task<IActionResult> GetAllProducts(){    
 
-        return Ok(products);
+        Query.Product.All request = new Query.Product.All();
+    
+        List<Result.Product.All> result = await mediator.Send(request);
+
+        return Ok(result);
+
     }
 
 

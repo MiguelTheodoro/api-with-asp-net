@@ -10,16 +10,7 @@ public class Product
     public decimal Price { get; set; }
     public int Amount { get; set; }   
 
-    private Product(){}
-    public static Product From(Command.Product command)
-    {
-        return new Product
-        {
-            Name = command.Name,
-            Price = command.Price,
-            Amount = command.Amount
-        };
-    }
+    public Product(){}
     
 }
 

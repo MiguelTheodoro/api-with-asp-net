@@ -3,6 +3,7 @@ using Stable.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(Program).Assembly));
 // Add services to the container.
 builder.Services.AddDbContext<Storage>(config => config.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")).LogTo(Console.Write, LogLevel.Information));
 
