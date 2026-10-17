@@ -6,6 +6,11 @@ using Stable.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddExceptionHandler<Prevent>();
+builder.Services.AddProblemDetails();
+
+
+
 builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
 builder.Services.AddTransient(typeof(IPipelineBehavior<, >), typeof(Qualifier<, >));
@@ -18,6 +23,8 @@ builder.Services.AddOpenApi();
 
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
